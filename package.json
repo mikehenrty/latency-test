@@ -1,5 +1,7 @@
 {
   "name": "latency-test",
-  "dependencies": {
-  }
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {}
 }
