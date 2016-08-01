@@ -2,8 +2,10 @@ var http = require('http');
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var ws = require('ws');
 
 const PORT = 8021;
+const WS_PORT = 8022;
 const BASE_URL = `http:\/\/${os.hostname()}:${PORT}\/`;
 const BASE_PATH = path.resolve(__dirname, '..');
 const SITE_PATH = path.resolve(BASE_PATH, 'client');
@@ -37,3 +39,13 @@ var app = http.createServer((req, res) => {
 
 app.listen(PORT);
 console.log(`Listening on ${BASE_URL}`);
+
+// WebSockets
+websockets = new ws.Server({ server: app, port: WS_PORT });
+websockets.on('connection', socket => {
+  socket.on('message', message => {
+    console.log('got message', message);
+  });
+
+  socket.send('hello');
+});
