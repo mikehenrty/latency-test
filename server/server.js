@@ -41,10 +41,27 @@ app.listen(PORT);
 console.log(`Listening on ${BASE_URL}`);
 
 // WebSockets
+var clients = {};
 websockets = new ws.Server({ server: app, port: WS_PORT });
 websockets.on('connection', socket => {
   socket.on('message', message => {
-    console.log('got message', message);
+    var parts = message.split(' ');
+    var type = parts[0];
+    var sender = parts[1];
+    var recipient = parts[2];
+    var payload = parts[3];
+
+    switch (type) {
+      case 'register':
+        clients[sender] = socket;
+        break;
+
+      default:
+        console.log('unrecognized message type', type);
+        break;
+    }
+
+    console.log(Object.keys(clients));
   });
 
   socket.send('hello');
