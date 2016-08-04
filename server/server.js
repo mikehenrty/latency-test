@@ -24,15 +24,19 @@ function serveFile(filePath, res) {
 }
 
 var app = http.createServer((req, res) => {
-  console.log('Request received', req.url);
+  // TODO: do this more elegantly.
+  var url = req.url;
+  if (url.indexOf('?') !== -1) {
+    url = url.substr(0, url.indexOf('?'));
+  }
 
-  switch(req.url) {
+  switch(url) {
     case '/':
       serveFile('index.html', res);
       break;
 
     default:
-      serveFile(req.url, res);
+      serveFile(url, res);
       break;
   }
 });
@@ -54,6 +58,7 @@ websockets.on('connection', socket => {
     switch (type) {
       case 'register':
         clients[sender] = socket;
+        socket.clientId = sender;
         break;
 
       default:
@@ -61,7 +66,13 @@ websockets.on('connection', socket => {
         break;
     }
 
+    console.log('new registration, current clients:');
     console.log(Object.keys(clients));
+  });
+
+  socket.on('close', (thing1, thing2, thing3) => {
+    console.log('socket closed', socket.clientId);
+    delete clients[socket.clientId];
   });
 
   socket.send('hello');

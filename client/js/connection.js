@@ -8,6 +8,8 @@ window.Connection = (function() {
     this.id = id;
     this.type = type || 'websocket';
     this.socket = null;
+    this.initialized = false;
+    this.onconnect = null;
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -50,8 +52,17 @@ window.Connection = (function() {
     this._send('register', null, null, cb);
   };
 
+  Connection.prototype.onPeerConnect = function(cb) {
+    this.onconnect = cb;
+  };
+
   Connection.prototype.init = function(cb) {
-    this.sendRegister(cb);
+    this.sendRegister(err => {
+      if (!err) {
+        this.initialized = true
+      }
+      cb && cb(err);
+    });
   };
 
   return Connection;
