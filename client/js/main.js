@@ -9,16 +9,16 @@ function main() {
     console.log('attempting to connect to peer', peer);
     Latency.connect(id, peer, err => {
       if (!err) {
-        DOM.add(DOM.p('connnected to ' + peer));
+        DOM.p('connnected to ' + peer);
       }
     });
   } else {
     console.log('waiting for connection');
     Latency.listen(id, err => {
       if (err) {
-        DOM.add(Dom.p('could not register new master'));
+        DOM.p('could not register new master');
       } else {
-        DOM.add((DOM.link(window.location.href + '?peer=' + id)));
+        DOM.link(window.location.href + '?peer=' + id);
       }
     });
   }

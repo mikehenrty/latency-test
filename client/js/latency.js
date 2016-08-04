@@ -31,7 +31,7 @@ window.Latency = (function() {
         }
         Latency.ping(clientId, peerId, (err, result) => {
           if (!err) {
-            DOM.add(DOM.p('ping result ' + result + 'ms'));
+            DOM.p('ping result ' + result + 'ms');
           }
         });
       });
