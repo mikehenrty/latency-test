@@ -18,20 +18,34 @@ window.Latency = (function() {
   }
 
   return {
-    listen: function(clientId) {
+    listen: function(clientId, cb) {
       ensureConnection(clientId, err => {
-        if (!err) {
-          console.log('SUCCESS!!');
-        }
+        cb && cb(err);
       });
     },
 
     connect: function(clientId, peerId, cb) {
       ensureConnection(clientId, err => {
-        if (!err) {
-          // TODO: add code here to connect to ping other socket.
+        if (err) {
+          cb && cb(err);
         }
-        cb && cb(err);
+        Latency.ping(clientId, peerId, (err, result) => {
+          if (!err) {
+            DOM.add(DOM.p('ping result ' + result + 'ms'));
+          }
+        });
+      });
+    },
+
+    ping: function(clientId, peerId, cb) {
+      ensureConnection(clientId, err => {
+        if (err) {
+          return cb && cb(err);
+        }
+        var before = Date.now();
+        connection.sendPing(peerId, err => {
+          cb && cb(err, Date.now() - before);
+        });
       });
     }
   };

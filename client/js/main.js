@@ -14,8 +14,13 @@ function main() {
     });
   } else {
     console.log('waiting for connection');
-    Latency.listen(id);
-    DOM.add((DOM.link(window.location.href + '?peer=' + id)));
+    Latency.listen(id, err => {
+      if (err) {
+        DOM.add(Dom.p('could not register new master'));
+      } else {
+        DOM.add((DOM.link(window.location.href + '?peer=' + id)));
+      }
+    });
   }
 }
 

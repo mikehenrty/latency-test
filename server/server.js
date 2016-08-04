@@ -61,6 +61,22 @@ websockets.on('connection', socket => {
         socket.clientId = sender;
         break;
 
+      case 'ping':
+        if (!clients[recipient]) {
+          socket.send('error: tried to ping non-existent client');
+        } else {
+          clients[recipient].send(`ping ${sender} ${payload}`);
+        }
+        break;
+
+      case 'pong':
+        if (!clients[recipient]) {
+          socket.send('error: tried to pong non-existent client');
+        } else {
+          clients[recipient].send(`pong ${sender} ${payload}`);
+        }
+        break;
+
       default:
         console.log('unrecognized message type', type);
         break;
@@ -74,6 +90,4 @@ websockets.on('connection', socket => {
     console.log('socket closed', socket.clientId);
     delete clients[socket.clientId];
   });
-
-  socket.send('hello');
 });

@@ -10,6 +10,7 @@ window.Connection = (function() {
     this.socket = null;
     this.initialized = false;
     this.onconnect = null;
+    this.pingHandlers = [];
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -24,9 +25,35 @@ window.Connection = (function() {
       cb && cb(e);
     }
 
+    this.socket.addEventListener('message', this._onMessage.bind(this));
     this.socket.addEventListener('open', () => {
       cb && cb(null);
     });
+  };
+
+  Connection.prototype._onMessage = function(evt) {
+    var parts = evt.data.split(' ');
+    var type = parts[0];
+    var sender = parts[1];
+    var payload = parts[2];
+
+    switch (type) {
+      case 'ping':
+        this.sendPong(sender, payload);
+        break;
+
+      case 'pong':
+        if (!this.pingHandlers[payload]) {
+          console.log('unable to find pingId', payload);
+        } else {
+          this.pingHandlers[payload]();
+        }
+        break;
+
+      default:
+        console.log('unrecognized message type', type);
+        break;
+    }
   };
 
   Connection.prototype._send = function(type, recipient, payload, cb) {
@@ -48,8 +75,23 @@ window.Connection = (function() {
     });
   };
 
+  Connection.prototype._registerPingHandler = function(pingId, cb) {
+    this.pingHandlers[pingId] = cb;
+  };
+
   Connection.prototype.sendRegister = function(cb) {
     this._send('register', null, null, cb);
+  };
+
+  Connection.prototype.sendPong = function(recipient, pingId, cb) {
+    this._send('pong', recipient, pingId, cb);
+  };
+
+  Connection.prototype.sendPing = function(peerId, cb) {
+    console.log('sending ping');
+    var pingId = Utility.guid();
+    this._registerPingHandler(pingId, cb);
+    this._send('ping', peerId, pingId);
   };
 
   Connection.prototype.onPeerConnect = function(cb) {
