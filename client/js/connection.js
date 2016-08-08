@@ -13,6 +13,7 @@ window.Connection = (function() {
 
     this.onconnect = null;
     this.onresults = null;
+    this.onrequest = null;
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -65,6 +66,10 @@ window.Connection = (function() {
         } else {
           handler();
         }
+        break;
+
+      case 'request':
+        this.onrequest && this.onrequest(sender, parseInt(payload, 10));
         break;
 
       case 'results':
@@ -140,6 +145,10 @@ window.Connection = (function() {
     this._send('results', peerId, results, cb);
   };
 
+  Connection.prototype.sendRequestForPing = function(peerId, count, cb) {
+    this._send('request', peerId, count, cb);
+  };
+
   Connection.prototype.init = function(cb) {
     this.sendRegister(err => {
       if (!err) {
@@ -156,6 +165,10 @@ window.Connection = (function() {
 
   Connection.prototype.onPeerResults = function(cb) {
     this.onresults = cb;
+  };
+
+  Connection.prototype.onPeerRequest = function(cb) {
+    this.onrequest = cb;
   };
 
   return Connection;

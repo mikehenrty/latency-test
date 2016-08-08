@@ -65,6 +65,7 @@ websockets.on('connection', socket => {
       case 'ping_ack':
       case 'connect':
       case 'connect_ack':
+      case 'request':
       case 'results':
         if (!clients[recipient]) {
           socket.send(`error: tried to ${type} non-existent client`);

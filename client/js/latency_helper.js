@@ -46,7 +46,10 @@ window.LatencyHelper = (function() {
           pingNext(++curPing);
         })
       } else {
-        cb(null, results);
+        this.resultsHandler &&
+          this.resultsHandler(this.clientId, peerId, results);
+        this.connection.sendResults(peerId, results);
+        cb && cb(null, results);
       }
     };
     pingNext(0);
@@ -78,6 +81,11 @@ window.LatencyHelper = (function() {
           this.resultsHandler(peerId, this.clientId, results);
       });
 
+      this.connection.onPeerRequest((peerId, count) => {
+        console.log('got peer request', peerId, count);
+        this.pingSerial(peerId, count);
+      });
+
       cb && cb(err);
     });
   };
@@ -85,12 +93,11 @@ window.LatencyHelper = (function() {
   LatencyHelper.prototype.pingTest = function(peerId, count, cb) {
     // TODO: add more types of ping tests
     this.pingSerial(peerId, count, (err, results) => {
-      if (!err) {
-        this.resultsHandler &&
-          this.resultsHandler(this.clientId, peerId, results);
-        this.connection.sendResults(peerId, results);
+      if (err) {
+        return cb && cb(err);
       }
-      cb && cb(err);
+
+      this.connection.sendRequestForPing(peerId, count, cb);
     });
   };
 
