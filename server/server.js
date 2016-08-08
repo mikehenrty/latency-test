@@ -63,6 +63,8 @@ websockets.on('connection', socket => {
 
       case 'ping':
       case 'ping_ack':
+      case 'connect':
+      case 'connect_ack':
         if (!clients[recipient]) {
           socket.send(`error: tried to ${type} non-existent client`);
         } else {
@@ -74,13 +76,9 @@ websockets.on('connection', socket => {
         console.log('unrecognized message type', type);
         break;
     }
-
-    console.log('new registration, current clients:');
-    console.log(Object.keys(clients));
   });
 
   socket.on('close', (thing1, thing2, thing3) => {
-    console.log('socket closed', socket.clientId);
     delete clients[socket.clientId];
   });
 });

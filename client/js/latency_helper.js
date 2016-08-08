@@ -42,7 +42,6 @@ window.LatencyHelper = (function() {
           if (err) {
             console.log('ping error', err);
           }
-          console.log('got a ping result', err, result);
           results.push(result);
           pingNext(++curPing);
         })
@@ -61,8 +60,17 @@ window.LatencyHelper = (function() {
     this.connectionHandler = cb;
   };
 
+  LatencyHelper.prototype.connect = function(peerId, cb) {
+    this._ensureConnection(() => {
+      this.connection.sendConnect(peerId, cb);
+    });
+  };
+
   LatencyHelper.prototype.init = function(cb) {
     this._ensureConnection(err => {
+      this.connection.onPeerConnect(peerId => {
+        this.connectionHandler && this.connectionHandler(peerId);
+      });
       cb && cb(err);
     });
   };

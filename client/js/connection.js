@@ -10,7 +10,7 @@ window.Connection = (function() {
     this.socket = null;
     this.initialized = false;
     this.onconnect = null;
-    this.pingHandlers = [];
+    this.handlers = {};
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -38,15 +38,30 @@ window.Connection = (function() {
     var payload = parts[2];
 
     switch (type) {
+      case 'connect':
+        this.onconnect && this.onconnect(sender);
+        this.sendConnectAck(sender);
+        break;
+
+      case 'connect_ack':
+        var handler = this._getHandler('connect', sender);
+        if (!handler) {
+          console.log('unable to find connect handler', sender);
+        } else {
+          handler();
+        }
+        break;
+
       case 'ping':
         this.sendPingAck(sender, payload);
         break;
 
       case 'ping_ack':
-        if (!this.pingHandlers[payload]) {
-          console.log('unable to find pingId', payload);
+        var handler = this._getHandler('ping', payload);
+        if (!handler) {
+          console.log('unable to find pingId handler', payload);
         } else {
-          this.pingHandlers[payload]();
+          handler();
         }
         break;
 
@@ -75,22 +90,41 @@ window.Connection = (function() {
     });
   };
 
-  Connection.prototype._registerPingHandler = function(pingId, cb) {
-    this.pingHandlers[pingId] = cb;
+  Connection.prototype._registerHandler = function(type, id, cb) {
+    if (!this.handlers[type]) {
+      this.handlers[type] = {};
+    }
+    this.handlers[type][id] = cb;
+  };
+
+  Connection.prototype._getHandler = function(type, id) {
+    if (!this.handlers[type]) {
+      return null;
+    }
+    return this.handlers[type][id];
   };
 
   Connection.prototype.sendRegister = function(cb) {
     this._send('register', null, null, cb);
   };
 
+  Connection.prototype.sendPing = function(peerId, cb) {
+    var pingId = Utility.guid();
+    this._registerHandler('ping', pingId, cb);
+    this._send('ping', peerId, pingId);
+  };
+
   Connection.prototype.sendPingAck = function(recipient, pingId, cb) {
     this._send('ping_ack', recipient, pingId, cb);
   };
 
-  Connection.prototype.sendPing = function(peerId, cb) {
-    var pingId = Utility.guid();
-    this._registerPingHandler(pingId, cb);
-    this._send('ping', peerId, pingId);
+  Connection.prototype.sendConnect = function(peerId, cb) {
+    this._registerHandler('connect', peerId, cb);
+    this._send('connect', peerId, null);
+  };
+
+  Connection.prototype.sendConnectAck = function(recipient, cb) {
+    this._send('connect_ack', recipient, null, cb);
   };
 
   Connection.prototype.onPeerConnect = function(cb) {

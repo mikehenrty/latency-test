@@ -33,21 +33,19 @@ function main() {
     }
 
     if (peer) {
-      helper.pingTest(peer, PING_COUNT, err => {
-        if (!err) {
-          DOM.p(`finished ping test with ${peer}`);
+      helper.connect(peer, err => {
+        if (err) {
+          DOM.p(`could not connect to ${peer}, ${err}`);
+          printPeerLink();
+          return;
         }
+
+        helper.pingTest(peer, PING_COUNT, err => {
+          if (!err) {
+            DOM.p(`finished ping test with ${peer}`);
+          }
+        });
       });
-
-      // TODO: add handshake message.
-      // helper.connect(peer, err => {
-      //   if (err) {
-      //     DOM.p(`could not connect to ${peer}, ${err}`);
-      //     printPeerLink();
-      //     return;
-      //   }
-
-      // });
     }
   });
 }
