@@ -68,7 +68,7 @@ websockets.on('connection', socket => {
       case 'request':
       case 'results':
         if (!clients[recipient]) {
-          socket.send(`error: tried to ${type} non-existent client`);
+          socket.send(`error ${sender} ${type} ${recipient} ${payload}`);
         } else {
           clients[recipient].send(`${type} ${sender} ${payload}`);
         }

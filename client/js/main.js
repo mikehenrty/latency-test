@@ -9,7 +9,7 @@ function main() {
   var helper = new LatencyHelper(id);
 
   function printPeerLink() {
-    DOM.link(window.location.href + '?peer=' + id);
+    DOM.link(`${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`);
   }
 
   function niceId(guid) {

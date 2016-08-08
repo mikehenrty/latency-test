@@ -39,6 +39,7 @@ window.Connection = (function() {
     var type = parts[0];
     var sender = parts[1];
     var payload = parts[2];
+    var handler;
 
     switch (type) {
       case 'connect':
@@ -47,7 +48,7 @@ window.Connection = (function() {
         break;
 
       case 'connect_ack':
-        var handler = this._getHandler('connect', sender);
+        handler = this._getHandler('connect', sender);
         if (!handler) {
           console.log('unable to find connect handler', sender);
         } else {
@@ -60,7 +61,7 @@ window.Connection = (function() {
         break;
 
       case 'ping_ack':
-        var handler = this._getHandler('ping', payload);
+        handler = this._getHandler('ping', payload);
         if (!handler) {
           console.log('unable to find pingId handler', payload);
         } else {
@@ -77,6 +78,15 @@ window.Connection = (function() {
           return parseInt(number, 10);
         });
         this.onresults && this.onresults(sender, results);
+        break;
+
+      case 'error':
+        if (payload === 'connect') {
+          handler = this._getHandler('connect', parts[3]);
+        } else if (payload === 'ping') {
+          handler = this._getHandler('ping', parts[4]);
+        }
+        handler(`could not complete ${payload}`);
         break;
 
       default:
