@@ -62,18 +62,11 @@ websockets.on('connection', socket => {
         break;
 
       case 'ping':
+      case 'ping_ack':
         if (!clients[recipient]) {
-          socket.send('error: tried to ping non-existent client');
+          socket.send(`error: tried to ${type} non-existent client`);
         } else {
-          clients[recipient].send(`ping ${sender} ${payload}`);
-        }
-        break;
-
-      case 'pong':
-        if (!clients[recipient]) {
-          socket.send('error: tried to pong non-existent client');
-        } else {
-          clients[recipient].send(`pong ${sender} ${payload}`);
+          clients[recipient].send(`${type} ${sender} ${payload}`);
         }
         break;
 

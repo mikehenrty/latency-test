@@ -39,10 +39,10 @@ window.Connection = (function() {
 
     switch (type) {
       case 'ping':
-        this.sendPong(sender, payload);
+        this.sendPingAck(sender, payload);
         break;
 
-      case 'pong':
+      case 'ping_ack':
         if (!this.pingHandlers[payload]) {
           console.log('unable to find pingId', payload);
         } else {
@@ -83,12 +83,11 @@ window.Connection = (function() {
     this._send('register', null, null, cb);
   };
 
-  Connection.prototype.sendPong = function(recipient, pingId, cb) {
-    this._send('pong', recipient, pingId, cb);
+  Connection.prototype.sendPingAck = function(recipient, pingId, cb) {
+    this._send('ping_ack', recipient, pingId, cb);
   };
 
   Connection.prototype.sendPing = function(peerId, cb) {
-    console.log('sending ping');
     var pingId = Utility.guid();
     this._registerPingHandler(pingId, cb);
     this._send('ping', peerId, pingId);
