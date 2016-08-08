@@ -9,8 +9,10 @@ window.Connection = (function() {
     this.type = type || 'websocket';
     this.socket = null;
     this.initialized = false;
-    this.onconnect = null;
     this.handlers = {};
+
+    this.onconnect = null;
+    this.onresults = null;
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -63,6 +65,13 @@ window.Connection = (function() {
         } else {
           handler();
         }
+        break;
+
+      case 'results':
+        var results = payload.split(',').map(number => {
+          return parseInt(number, 10);
+        });
+        this.onresults && this.onresults(sender, results);
         break;
 
       default:
@@ -127,8 +136,8 @@ window.Connection = (function() {
     this._send('connect_ack', recipient, null, cb);
   };
 
-  Connection.prototype.onPeerConnect = function(cb) {
-    this.onconnect = cb;
+  Connection.prototype.sendResults = function(peerId, results, cb) {
+    this._send('results', peerId, results, cb);
   };
 
   Connection.prototype.init = function(cb) {
@@ -138,6 +147,15 @@ window.Connection = (function() {
       }
       cb && cb(err);
     });
+  };
+
+  // Event handlers.
+  Connection.prototype.onPeerConnect = function(cb) {
+    this.onconnect = cb;
+  };
+
+  Connection.prototype.onPeerResults = function(cb) {
+    this.onresults = cb;
   };
 
   return Connection;

@@ -12,8 +12,12 @@ function main() {
     DOM.link(window.location.href + '?peer=' + id);
   }
 
-  helper.onResults(results => {
-    DOM.p('pinged results ' + results);
+  function niceId(guid) {
+    return id === guid ? 'ME' : guid;
+  }
+
+  helper.onResults((sender, recipient, results) => {
+    DOM.p(`pinged results from ${niceId(sender)} to ${niceId(recipient)}: ${results}`);
     DOM.p('mean is ' + Utility.mean(results));
     DOM.p('standard deviation is ' + Utility.stddev(results));
   });

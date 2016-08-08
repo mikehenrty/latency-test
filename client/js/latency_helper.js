@@ -68,9 +68,16 @@ window.LatencyHelper = (function() {
 
   LatencyHelper.prototype.init = function(cb) {
     this._ensureConnection(err => {
+
       this.connection.onPeerConnect(peerId => {
         this.connectionHandler && this.connectionHandler(peerId);
       });
+
+      this.connection.onPeerResults((peerId, results) => {
+        this.resultsHandler &&
+          this.resultsHandler(peerId, this.clientId, results);
+      });
+
       cb && cb(err);
     });
   };
@@ -79,7 +86,9 @@ window.LatencyHelper = (function() {
     // TODO: add more types of ping tests
     this.pingSerial(peerId, count, (err, results) => {
       if (!err) {
-        this.resultsHandler && this.resultsHandler(results);
+        this.resultsHandler &&
+          this.resultsHandler(this.clientId, peerId, results);
+        this.connection.sendResults(peerId, results);
       }
       cb && cb(err);
     });
