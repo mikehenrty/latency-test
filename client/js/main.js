@@ -7,14 +7,14 @@ function main() {
 
   if (peer) {
     console.log('attempting to connect to peer', peer);
-    Latency.connect(id, peer, err => {
+    Latency.ping(id, peer, (err, result) => {
       if (!err) {
-        DOM.p('connnected to ' + peer);
+        DOM.p('ping result ' + result + 'ms');
       }
     });
   } else {
     console.log('waiting for connection');
-    Latency.listen(id, err => {
+    Latency.wait(id, err => {
       if (err) {
         DOM.p('could not register new master');
       } else {

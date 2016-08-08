@@ -18,22 +18,9 @@ window.Latency = (function() {
   }
 
   return {
-    listen: function(clientId, cb) {
+    wait: function(clientId, cb) {
       ensureConnection(clientId, err => {
         cb && cb(err);
-      });
-    },
-
-    connect: function(clientId, peerId, cb) {
-      ensureConnection(clientId, err => {
-        if (err) {
-          cb && cb(err);
-        }
-        Latency.ping(clientId, peerId, (err, result) => {
-          if (!err) {
-            DOM.p('ping result ' + result + 'ms');
-          }
-        });
       });
     },
 
