@@ -9,7 +9,7 @@ function main() {
   var helper = new LatencyHelper(id);
 
   function printPeerLink() {
-    DOM.link(`${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`, 
+    DOM.link(`${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`,
              'Click here to connect to this browser.', true);
   }
 
@@ -27,13 +27,13 @@ function main() {
   }
 
   helper.onResults((sender, recipient, results) => {
-    DOM.p(`pinged results from ${niceId(sender)} to ${niceId(recipient)}: ${results}`);
-    DOM.p('mean is ' + Utility.mean(results));
-    DOM.p('standard deviation is ' + Utility.stddev(results));
+    DOM.resultTable.add(niceId(sender), niceId(recipient), results,
+                        Utility.stddev(results).toFixed(3),
+                        Utility.mean(results).toFixed(3));
   });
 
   helper.onConnection(peerId => {
-    DOM.p(`new connection: ${niceId(peerId)}`);
+    console.log(`new connection: ${niceId(peerId)}`);
   });
 
   helper.init(err => {

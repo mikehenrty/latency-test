@@ -23,3 +23,17 @@ body {
   border-radius: 10px;
   padding: 10px 20px;
 }
+
+#result-table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+#result-table > thead > tr {
+  text-decoration: underline;
+  line-height: 40px;
+}
+
+#result-table > tbody > tr {
+  line-height: 22px;
+}
