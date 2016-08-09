@@ -6,6 +6,10 @@
        url('./fonts/press-start-2p-v4-latin-regular.woff2') format('woff2')
 }
 
+a {
+  color: #00bbfe;
+}
+
 html {
   background: url('../img/bg.png');
   color: #2ff20e;
