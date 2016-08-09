@@ -1,0 +1,25 @@
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Press Start 2P'), local('PressStart2P-Regular'),
+       url('./fonts/press-start-2p-v4-latin-regular.woff2') format('woff2')
+}
+
+html {
+  background: url('../img/bg.png');
+  color: #2ff20e;
+  font-family: 'Press Start 2P';
+}
+
+body {
+  position: absolute;
+  top: 20px;
+  left: 100px;
+  right: 100px;
+  min-height: calc(100% - 100px);
+  background: black;
+  border: 1px solid gray;
+  border-radius: 10px;
+  padding: 10px 20px;
+}
