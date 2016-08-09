@@ -1,10 +1,13 @@
 window.DOM = (function() {
 
   return {
-    link: function(href) {
+    link: function(href, text, blank) {
       var link = document.createElement('a');
       link.href = href;
-      link.textContent = href;
+      link.textContent = text || href;
+      if (blank) {
+        link.setAttribute('target', '_blank');
+      }
       DOM.add(link);
       return link;
     },
