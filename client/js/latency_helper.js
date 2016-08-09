@@ -82,7 +82,6 @@ window.LatencyHelper = (function() {
       });
 
       this.connection.onPeerRequest((peerId, count) => {
-        console.log('got peer request', peerId, count);
         this.pingSerial(peerId, count);
       });
 

@@ -33,7 +33,7 @@ function main() {
   });
 
   helper.onConnection(peerId => {
-    console.log(`new connection: ${niceId(peerId)}`);
+    console.log(`new connection: ${niceId(peerId)} ${peerId}`);
   });
 
   helper.init(err => {
