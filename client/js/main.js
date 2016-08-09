@@ -13,8 +13,17 @@ function main() {
              'Click here to connect to this browser.', true);
   }
 
+  var clientCount = 0;
+  var clientNames = {};
   function niceId(guid) {
-    return id === guid ? 'ME' : guid;
+    if (id === guid) {
+      return 'Me';
+    }
+    if (clientNames[guid]) {
+      return clientNames[guid]
+    }
+    clientNames[guid] = 'client_' + ++clientCount;
+    return clientNames[guid];
   }
 
   helper.onResults((sender, recipient, results) => {
@@ -24,7 +33,7 @@ function main() {
   });
 
   helper.onConnection(peerId => {
-    DOM.p(`new connection: ${peerId}`);
+    DOM.p(`new connection: ${niceId(peerId)}`);
   });
 
   helper.init(err => {
@@ -40,14 +49,14 @@ function main() {
     if (peer) {
       helper.connect(peer, err => {
         if (err) {
-          DOM.p(`could not connect to ${peer}, ${err}`);
+          DOM.p(`could not connect to ${niceId(peer)}, ${err}`);
           printPeerLink();
           return;
         }
 
         helper.pingTest(peer, PING_COUNT, err => {
           if (!err) {
-            DOM.p(`finished ping test with ${peer}`);
+            DOM.p(`finished ping test with ${niceId(peer)}`);
           }
         });
       });
