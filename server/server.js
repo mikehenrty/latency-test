@@ -66,7 +66,7 @@ websockets.on('connection', socket => {
       case 'request':
       case 'results':
         if (!clients[recipient]) {
-          socket.send(`error ${sender} ${type} ${recipient} ${payload}`);
+          socket.send(`error ${type} ${sender} ${payload}`);
         } else {
           clients[recipient].send(`${type} ${sender} ${payload}`);
         }
@@ -74,6 +74,7 @@ websockets.on('connection', socket => {
 
       default:
         console.log('unrecognized message type', type);
+        socket.send(`error unrecognized_${type} ${sender} ${payload}`);
         break;
     }
   });

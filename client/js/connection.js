@@ -37,22 +37,8 @@ window.Connection = (function() {
     var type = parts[0];
     var sender = parts[1];
     var payload = parts[2];
-    var handler;
 
     switch (type) {
-      case 'ping':
-        this.sendPingAck(sender, payload);
-        break;
-
-      case 'ping_ack':
-        handler = this._getHandler('ping', payload);
-        if (!handler) {
-          console.log('unable to find pingId handler', payload);
-        } else {
-          handler();
-        }
-        break;
-
       case 'request':
         this.onrequest && this.onrequest(sender, parseInt(payload, 10));
         break;
@@ -65,19 +51,23 @@ window.Connection = (function() {
         break;
 
       case 'error':
-        if (payload === 'ping') {
-          handler = this._getHandler('ping', parts[4]);
-        }
-        handler(`could not complete ${payload}`);
+        type = parts[1];
+        sender = parts[2];
+        payload = parts[3];
+        this.handlers[type] && this.handlers[type].forEach(handler => {
+          handler(`could not complete ${payload}`, sender, payload);
+        });
         break;
 
       default:
-        console.log('unrecognized message type', type);
+        this.handlers[type] && this.handlers[type].forEach(handler => {
+          handler(null, sender, payload);
+        });
         break;
     }
   };
 
-  Connection.prototype._send = function(type, recipient, payload, cb) {
+  Connection.prototype.send = function(type, recipient, payload, cb) {
     this._ensureWebSocket(err => {
       if (err) {
         return cb && cb(err);
@@ -96,40 +86,23 @@ window.Connection = (function() {
     });
   };
 
-  Connection.prototype._registerHandler = function(type, id, cb) {
+  Connection.prototype.registerHandler = function(type, cb) {
     if (!this.handlers[type]) {
-      this.handlers[type] = {};
+      this.handlers[type] = [];
     }
-    this.handlers[type][id] = cb;
-  };
-
-  Connection.prototype._getHandler = function(type, id) {
-    if (!this.handlers[type]) {
-      return null;
-    }
-    return this.handlers[type][id];
+    this.handlers[type].push(cb);
   };
 
   Connection.prototype.sendRegister = function(cb) {
-    this._send('register', null, null, cb);
-  };
-
-  Connection.prototype.sendPing = function(peerId, cb) {
-    var pingId = Utility.guid();
-    this._registerHandler('ping', pingId, cb);
-    this._send('ping', peerId, pingId);
-  };
-
-  Connection.prototype.sendPingAck = function(recipient, pingId, cb) {
-    this._send('ping_ack', recipient, pingId, cb);
+    this.send('register', null, null, cb);
   };
 
   Connection.prototype.sendResults = function(peerId, results, cb) {
-    this._send('results', peerId, results, cb);
+    this.send('results', peerId, results, cb);
   };
 
   Connection.prototype.sendRequestForPing = function(peerId, count, cb) {
-    this._send('request', peerId, count, cb);
+    this.send('request', peerId, count, cb);
   };
 
   Connection.prototype.init = function(cb) {

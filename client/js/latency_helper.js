@@ -21,38 +21,38 @@ window.LatencyHelper = (function() {
     }
   };
 
-  LatencyHelper.prototype.pingOnce = function(peerId, cb) {
-    this._ensureConnection(err => {
-      if (err) {
-        return cb && cb(err);
-      }
-      var before = Date.now();
-      this.connection.sendPing(peerId, err => {
-        cb && cb(err, Date.now() - before);
-      });
+  LatencyHelper.prototype._ensurePinger = function(cb) {
+    if (this.pinger) {
+      return cb && cb(null);
+    }
+    this._ensureConnection(() => {
+      this.pinger = new Pinger(this.connection);
+      cb && cb(null);
     });
   };
 
   LatencyHelper.prototype.pingSerial = function(peerId, count, cb) {
-    var results = [];
-    var pingNext = (curPing) => {
-      if (curPing < count) {
-        this.pingOnce(peerId, (err, result) => {
-          if (err) {
-            console.log('ping error', err);
-            return cb && cb(err);
-          }
-          results.push(result);
-          pingNext(++curPing);
-        })
-      } else {
-        this.resultsHandler &&
-          this.resultsHandler(this.clientId, peerId, results);
-        this.connection.sendResults(peerId, results);
-        cb && cb(null, results);
-      }
-    };
-    pingNext(0);
+    this._ensurePinger(() => {
+      var results = [];
+      var pingNext = (curPing) => {
+        if (curPing < count) {
+          this.pinger.ping(peerId, (err, result) => {
+            if (err) {
+              console.log('ping error', err);
+              return cb && cb(err);
+            }
+            results.push(result);
+            pingNext(++curPing);
+          })
+        } else {
+          this.resultsHandler &&
+            this.resultsHandler(this.clientId, peerId, results);
+          this.connection.sendResults(peerId, results);
+          cb && cb(null, results);
+        }
+      };
+      pingNext(0);
+    });
   };
 
   LatencyHelper.prototype.onResults = function(cb) {
@@ -71,7 +71,7 @@ window.LatencyHelper = (function() {
         this.pingSerial(peerId, count);
       });
 
-      cb && cb(err);
+      this._ensurePinger(cb);
     });
   };
 
