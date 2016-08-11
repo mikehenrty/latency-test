@@ -10,17 +10,20 @@ const BASE_URL = `http:\/\/${os.hostname()}:${PORT}\/`;
 const BASE_PATH = path.resolve(__dirname, '..');
 const SITE_PATH = path.resolve(BASE_PATH, 'client');
 
-function serveFile(filePath, res) {
-  filePath = path.resolve(SITE_PATH, './' + filePath);
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
+function serveFile(p, res) {
+  var filePath = path.resolve(SITE_PATH, './' + p);
+  fileStream = fs.createReadStream(filePath);
+  fileStream.on('error', err => {
+    if (err.code === 'ENOENT') {
       res.writeHead(404);
-      res.end(`404: File not found, ${filePath}`);
+      res.end(`404: File not found, ${p}`);
     } else {
-      res.writeHead(200);
-      res.end(content, 'utf-8');
+      res.writeHead(500);
+      res.end(`500: Unknown Server Error`);
     }
   });
+  res.writeHead(200);
+  fileStream.pipe(res);
 }
 
 var app = http.createServer((req, res) => {
