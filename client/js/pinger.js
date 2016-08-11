@@ -8,20 +8,16 @@ window.Pinger = (function() {
   }
 
   Pinger.prototype.handlePing = function(err, peerId, pingId) {
-    // If we got an error when sending ping, immediately call cb.
     if (err) {
-      var handler = this.pingHandlers[pingId];
-      var cb = handler && handler.cb;
-      return cb && cb(err);
+      // If we got an error when sending ping, immediately call cb.
+      return this.callPingHandler(err, pingId);
+    } else {
+      this.connection.send('ping_ack', peerId, pingId);
     }
-
-    this.connection.send('ping_ack', peerId, pingId);
   };
 
   Pinger.prototype.handlePingBack = function(err, peerId, pingId) {
-    var handler = this.pingHandlers[pingId];
-    var cb = handler && handler.cb;
-    cb && cb(err, Date.now() - handler.startTime);
+    this.callPingHandler(err, pingId);
   };
 
   Pinger.prototype.addPingHandler = function(pingId, startTime, cb) {
@@ -29,6 +25,13 @@ window.Pinger = (function() {
       startTime: startTime,
       cb: cb
     };
+  };
+
+  Pinger.prototype.callPingHandler = function(err, pingId) {
+    var handler = this.pingHandlers[pingId];
+    delete this.pingHandlers[pingId];
+    var cb = handler && handler.cb;
+    cb && cb(err, Date.now() - handler.startTime);
   };
 
   Pinger.prototype.ping = function(peerId, cb) {

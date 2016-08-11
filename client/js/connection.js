@@ -107,6 +107,10 @@ window.Connection = (function() {
   };
 
   Connection.prototype.init = function(cb) {
+    if (this.initialized) {
+      return cb && cb(null);
+    }
+
     this.sendRegister(err => {
       if (!err) {
         this.initialized = true
