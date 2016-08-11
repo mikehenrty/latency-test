@@ -63,8 +63,6 @@ websockets.on('connection', socket => {
 
       case 'ping':
       case 'ping_ack':
-      case 'connect':
-      case 'connect_ack':
       case 'request':
       case 'results':
         if (!clients[recipient]) {
@@ -80,7 +78,7 @@ websockets.on('connection', socket => {
     }
   });
 
-  socket.on('close', (thing1, thing2, thing3) => {
+  socket.on('close', () => {
     delete clients[socket.clientId];
   });
 });

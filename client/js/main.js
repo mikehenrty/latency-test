@@ -32,10 +32,6 @@ function main() {
                         Utility.mean(results).toFixed(3));
   });
 
-  helper.onConnection(peerId => {
-    console.log(`new connection: ${niceId(peerId)} ${peerId}`);
-  });
-
   helper.init(err => {
     if (err) {
       DOM.p(`error setting up, ${err}`);
@@ -47,18 +43,13 @@ function main() {
     }
 
     if (peer) {
-      helper.connect(peer, err => {
+      helper.pingTest(peer, PING_COUNT, err => {
         if (err) {
           DOM.p(`could not connect to ${niceId(peer)}, ${err}`);
           printPeerLink();
-          return;
+        } else {
+          DOM.p(`finished ping test with ${niceId(peer)}`);
         }
-
-        helper.pingTest(peer, PING_COUNT, err => {
-          if (!err) {
-            DOM.p(`finished ping test with ${niceId(peer)}`);
-          }
-        });
       });
     }
   });

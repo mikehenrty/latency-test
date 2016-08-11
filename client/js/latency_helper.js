@@ -4,7 +4,6 @@ window.LatencyHelper = (function() {
   function LatencyHelper(clientId) {
     this.clientId = clientId;
     this.connection = null;
-    this.connectionHandler = null;
     this.resultHandler = null;
   }
 
@@ -41,6 +40,7 @@ window.LatencyHelper = (function() {
         this.pingOnce(peerId, (err, result) => {
           if (err) {
             console.log('ping error', err);
+            return cb && cb(err);
           }
           results.push(result);
           pingNext(++curPing);
@@ -59,22 +59,8 @@ window.LatencyHelper = (function() {
     this.resultsHandler = cb;
   };
 
-  LatencyHelper.prototype.onConnection = function(cb) {
-    this.connectionHandler = cb;
-  };
-
-  LatencyHelper.prototype.connect = function(peerId, cb) {
-    this._ensureConnection(() => {
-      this.connection.sendConnect(peerId, cb);
-    });
-  };
-
   LatencyHelper.prototype.init = function(cb) {
     this._ensureConnection(err => {
-
-      this.connection.onPeerConnect(peerId => {
-        this.connectionHandler && this.connectionHandler(peerId);
-      });
 
       this.connection.onPeerResults((peerId, results) => {
         this.resultsHandler &&

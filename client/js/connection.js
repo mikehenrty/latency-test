@@ -4,14 +4,12 @@ window.Connection = (function() {
   const WS_PORT = 8022;
   const WS_HOST = 'ws://' + window.location.hostname + ':' + WS_PORT;
 
-  function Connection(id, type) {
+  function Connection(id) {
     this.id = id;
-    this.type = type || 'websocket';
     this.socket = null;
     this.initialized = false;
     this.handlers = {};
 
-    this.onconnect = null;
     this.onresults = null;
     this.onrequest = null;
   }
@@ -42,20 +40,6 @@ window.Connection = (function() {
     var handler;
 
     switch (type) {
-      case 'connect':
-        this.onconnect && this.onconnect(sender);
-        this.sendConnectAck(sender);
-        break;
-
-      case 'connect_ack':
-        handler = this._getHandler('connect', sender);
-        if (!handler) {
-          console.log('unable to find connect handler', sender);
-        } else {
-          handler();
-        }
-        break;
-
       case 'ping':
         this.sendPingAck(sender, payload);
         break;
@@ -81,9 +65,7 @@ window.Connection = (function() {
         break;
 
       case 'error':
-        if (payload === 'connect') {
-          handler = this._getHandler('connect', parts[3]);
-        } else if (payload === 'ping') {
+        if (payload === 'ping') {
           handler = this._getHandler('ping', parts[4]);
         }
         handler(`could not complete ${payload}`);
@@ -142,15 +124,6 @@ window.Connection = (function() {
     this._send('ping_ack', recipient, pingId, cb);
   };
 
-  Connection.prototype.sendConnect = function(peerId, cb) {
-    this._registerHandler('connect', peerId, cb);
-    this._send('connect', peerId, null);
-  };
-
-  Connection.prototype.sendConnectAck = function(recipient, cb) {
-    this._send('connect_ack', recipient, null, cb);
-  };
-
   Connection.prototype.sendResults = function(peerId, results, cb) {
     this._send('results', peerId, results, cb);
   };
@@ -166,11 +139,6 @@ window.Connection = (function() {
       }
       cb && cb(err);
     });
-  };
-
-  // Event handlers.
-  Connection.prototype.onPeerConnect = function(cb) {
-    this.onconnect = cb;
   };
 
   Connection.prototype.onPeerResults = function(cb) {
