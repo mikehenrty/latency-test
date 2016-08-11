@@ -94,7 +94,8 @@ window.Connection = (function() {
   };
 
   Connection.prototype.sendRegister = function(cb) {
-    this.send('register', null, null, cb);
+    this.registerHandler('register_ack', cb);
+    this.send('register', null, null);
   };
 
   Connection.prototype.sendResults = function(peerId, results, cb) {

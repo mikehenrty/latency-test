@@ -62,6 +62,7 @@ websockets.on('connection', socket => {
       case 'register':
         clients[sender] = socket;
         socket.clientId = sender;
+        socket.send('register_ack');
         break;
 
       case 'ping':
