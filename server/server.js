@@ -26,22 +26,16 @@ function serveFile(p, res) {
   fileStream.pipe(res);
 }
 
+function getPath(req) {
+  var url = req.url.split('?')[0];
+  if (url.endsWith('/')) {
+    url += 'index.html';
+  }
+  return url;
+}
+
 var app = http.createServer((req, res) => {
-  // TODO: do this more elegantly.
-  var url = req.url;
-  if (url.indexOf('?') !== -1) {
-    url = url.substr(0, url.indexOf('?'));
-  }
-
-  switch(url) {
-    case '/':
-      serveFile('index.html', res);
-      break;
-
-    default:
-      serveFile(url, res);
-      break;
-  }
+  serveFile(getPath(req), res);
 });
 
 app.listen(PORT);
@@ -58,29 +52,21 @@ websockets.on('connection', socket => {
     var recipient = parts[2];
     var payload = parts[3];
 
-    switch (type) {
-      case 'register':
-        clients[sender] = socket;
-        socket.clientId = sender;
-        socket.send('register_ack');
-        break;
-
-      case 'ping':
-      case 'ping_ack':
-      case 'request':
-      case 'results':
-        if (!clients[recipient]) {
-          socket.send(`error ${type} ${sender} ${payload}`);
-        } else {
-          clients[recipient].send(`${type} ${sender} ${payload}`);
-        }
-        break;
-
-      default:
-        console.log('unrecognized message type', type);
-        socket.send(`error unrecognized_${type} ${sender} ${payload}`);
-        break;
+    // Register is the only message handled by the server.
+    if (type === 'register') {
+      clients[sender] = socket;
+      socket.clientId = sender;
+      socket.send('register_ack');
+      return;
     }
+
+    // Pass message on to recipient, whatever it may mean.
+    if (!clients[recipient]) {
+      socket.send(`error ${type} ${sender} ${payload}`);
+      return;
+    }
+
+    clients[recipient].send(`${type} ${sender} ${payload}`);
   });
 
   socket.on('close', () => {
