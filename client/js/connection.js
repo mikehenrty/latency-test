@@ -31,26 +31,19 @@ window.Connection = (function() {
 
   Connection.prototype._onMessage = function(evt) {
     var parts = evt.data.split(' ');
-    var type = parts[0];
-    var sender = parts[1];
-    var payload = parts[2];
-
-    switch (type) {
-      case 'error':
-        type = parts[1];
-        sender = parts[2];
-        payload = parts[3];
-        this.handlers[type] && this.handlers[type].forEach(handler => {
-          handler(`could not complete ${payload}`, sender, payload);
-        });
-        break;
-
-      default:
-        this.handlers[type] && this.handlers[type].forEach(handler => {
-          handler(null, sender, payload);
-        });
-        break;
+    var error = null;
+    if (parts[0] === 'error') {
+      error = parts.shift();
     }
+    var type = parts.shift();
+    var sender = parts.shift();
+    var payload = parts.shift();
+    var args = [sender, payload];
+    error = error ? `could not complete ${payload}` : null;
+    args.unshift(error);
+    this.handlers[type] && this.handlers[type].forEach(handler => {
+      handler.apply(null, args);
+    });
   };
 
   Connection.prototype.send = function(type, recipient, payload, cb) {
