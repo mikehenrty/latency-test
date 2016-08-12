@@ -26,32 +26,8 @@ window.LatencyHelper = (function() {
       return cb && cb(null);
     }
     this._ensureConnection(() => {
-      this.pinger = new Pinger(this.connection);
+      this.pinger = new Pinger(this.clientId, this.connection);
       cb && cb(null);
-    });
-  };
-
-  LatencyHelper.prototype.pingSerial = function(peerId, count, cb) {
-    this._ensurePinger(() => {
-      var results = [];
-      var pingNext = (curPing) => {
-        if (curPing < count) {
-          this.pinger.ping(peerId, (err, result) => {
-            if (err) {
-              console.log('ping error', err);
-              return cb && cb(err);
-            }
-            results.push(result);
-            pingNext(++curPing);
-          })
-        } else {
-          this.resultsHandler &&
-            this.resultsHandler(this.clientId, peerId, results);
-          this.connection.sendResults(peerId, results);
-          cb && cb(null, results);
-        }
-      };
-      pingNext(0);
     });
   };
 
@@ -60,29 +36,25 @@ window.LatencyHelper = (function() {
   };
 
   LatencyHelper.prototype.init = function(cb) {
-    this._ensureConnection(err => {
-
-      this.connection.onPeerResults((peerId, results) => {
+    this._ensurePinger(err => {
+      this.pinger.onPingResults((fromId, toId, results) => {
         this.resultsHandler &&
-          this.resultsHandler(peerId, this.clientId, results);
+          this.resultsHandler(fromId, toId, results);
       });
 
-      this.connection.onPeerRequest((peerId, count) => {
-        this.pingSerial(peerId, count);
-      });
-
-      this._ensurePinger(cb);
+      cb && cb(err);
     });
   };
 
   LatencyHelper.prototype.pingTest = function(peerId, count, cb) {
     // TODO: add more types of ping tests
-    this.pingSerial(peerId, count, (err, results) => {
-      if (err) {
-        return cb && cb(err);
-      }
-
-      this.connection.sendRequestForPing(peerId, count, cb);
+    this._ensurePinger(() => {
+      this.pinger.pingSerial(peerId, count, (err, results) => {
+        if (err) {
+          return cb && cb(err);
+        }
+        this.pinger.sendRequestForPing(peerId, count, cb);
+      });
     });
   };
 

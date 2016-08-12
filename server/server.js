@@ -72,6 +72,7 @@ websockets.on('connection', socket => {
         if (!clients[recipient]) {
           socket.send(`error ${type} ${sender} ${payload}`);
         } else {
+          console.log('sending message', type);
           clients[recipient].send(`${type} ${sender} ${payload}`);
         }
         break;

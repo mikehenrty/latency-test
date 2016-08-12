@@ -9,9 +9,6 @@ window.Connection = (function() {
     this.socket = null;
     this.initialized = false;
     this.handlers = {};
-
-    this.onresults = null;
-    this.onrequest = null;
   }
 
   Connection.prototype._ensureWebSocket = function(cb) {
@@ -39,17 +36,6 @@ window.Connection = (function() {
     var payload = parts[2];
 
     switch (type) {
-      case 'request':
-        this.onrequest && this.onrequest(sender, parseInt(payload, 10));
-        break;
-
-      case 'results':
-        var results = payload.split(',').map(number => {
-          return parseInt(number, 10);
-        });
-        this.onresults && this.onresults(sender, results);
-        break;
-
       case 'error':
         type = parts[1];
         sender = parts[2];
@@ -98,14 +84,6 @@ window.Connection = (function() {
     this.send('register', null, null);
   };
 
-  Connection.prototype.sendResults = function(peerId, results, cb) {
-    this.send('results', peerId, results, cb);
-  };
-
-  Connection.prototype.sendRequestForPing = function(peerId, count, cb) {
-    this.send('request', peerId, count, cb);
-  };
-
   Connection.prototype.init = function(cb) {
     if (this.initialized) {
       return cb && cb(null);
@@ -117,14 +95,6 @@ window.Connection = (function() {
       }
       cb && cb(err);
     });
-  };
-
-  Connection.prototype.onPeerResults = function(cb) {
-    this.onresults = cb;
-  };
-
-  Connection.prototype.onPeerRequest = function(cb) {
-    this.onrequest = cb;
   };
 
   return Connection;
