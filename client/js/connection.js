@@ -37,7 +37,7 @@ window.Connection = (function() {
     }
     var type = parts.shift();
     var sender = parts.shift();
-    var payload = parts.shift();
+    var payload = parts.join(' ');
     var args = [sender, payload];
     error = error ? `could not complete ${payload}` : null;
     args.unshift(error);

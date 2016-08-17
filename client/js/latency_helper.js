@@ -49,11 +49,11 @@ window.LatencyHelper = (function() {
   LatencyHelper.prototype.pingTest = function(peerId, count, cb) {
     // TODO: add more types of ping tests
     this._ensurePinger(() => {
-      this.pinger.pingSerial(peerId, count, (err, results) => {
+      this.pinger.pingSerialDirect(peerId, count, (err, results) => {
         if (err) {
           return cb && cb(err);
         }
-        this.pinger.sendRequestForPing(peerId, count, cb);
+        this.pinger.sendRequestForPingDirect(peerId, count, cb);
       });
     });
   };

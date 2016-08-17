@@ -1,26 +1,47 @@
 window.Pinger = (function() {
 
+  const INDIRECT = 'websocket';
+  const DIRECT = 'webrtc';
+
   function Pinger(clientId, connection) {
     this.clientId = clientId;
     this.connection = connection;
+    this.p2p = new P2P(clientId, connection);
     this.pingHandlers = {};
-    this.connection.registerHandler('ping', this.handlePing.bind(this));
-    this.connection.registerHandler('ping_ack', this.handlePingBack.bind(this));
-    this.connection.registerHandler('request', this.handleRequest.bind(this));
-    this.connection.registerHandler('results', this.handleResults.bind(this));
+    this.addMessageHandler('ping', this.handlePing);
+    this.addMessageHandler('ping_ack', this.handlePingBack);
+    this.addMessageHandler('request', this.handleRequest);
+    this.addMessageHandler('results', this.handleResults);
     this.onresults = null;
   }
 
-  Pinger.prototype.handlePing = function(err, peerId, pingId) {
+  Pinger.prototype._ensureP2PConnection = function(peerId, cb) {
+    if (this.p2p.peerId === peerId && this.p2p.isConnected()) {
+      return cb && cb(null);
+    }
+    this.p2p.connect(peerId, cb);
+  };
+
+  Pinger.prototype.getConnectionType = function(type) {
+    return type === INDIRECT ? this.connection : this.p2p;
+  };
+
+  Pinger.prototype.addMessageHandler = function(type, handler) {
+    this.connection.registerHandler(type, handler.bind(this, INDIRECT));
+    this.p2p.registerHandler(type, handler.bind(this, DIRECT));
+  };
+
+  Pinger.prototype.handlePing = function(type, err, peerId, pingId) {
     if (err) {
       // If we got an error when sending ping, immediately call cb.
       return this.callPingHandler(err, pingId);
-    } else {
-      this.connection.send('ping_ack', peerId, pingId);
     }
+
+    var conn = this.getConnectionType(type);
+    conn.send('ping_ack', peerId, pingId);
   };
 
-  Pinger.prototype.handlePingBack = function(err, peerId, pingId) {
+  Pinger.prototype.handlePingBack = function(type, err, peerId, pingId) {
     this.callPingHandler(err, pingId);
   };
 
@@ -31,26 +52,39 @@ window.Pinger = (function() {
     };
   };
 
-  Pinger.prototype.handleRequest = function(err, peerId, count) {
-    this.pingSerial(peerId, count);
+  Pinger.prototype.handleRequest = function(type, err, peerId, count) {
+    this._pingSerial(type, peerId, count);
   };
 
-  Pinger.prototype.handleResults = function(err, peerId, payload) {
+  Pinger.prototype.handleResults = function(type, err, peerId, payload) {
     var results = payload.split(',').map(number => {
       return parseInt(number, 10);
     });
     this.onresults && this.onresults(peerId, this.clientId, results);
   };
 
-  Pinger.prototype.sendRequestForPing = function(peerId, count, cb) {
-    this.connection.send('request', peerId, count, cb);
+  Pinger.prototype._sendRequestForPing = function(type, peerId, count, cb) {
+    this.getConnectionType(type).send('request', peerId, count, cb);
   };
 
-  Pinger.prototype.pingSerial = function(peerId, count, cb) {
+  Pinger.prototype.sendRequestForPingDirect = function(peerId, count, cb) {
+    this._ensureP2PConnection(peerId, err => {
+      if (err) {
+        return cb && cb(err);
+      }
+      this._sendRequestForPing(DIRECT, peerId, count, cb);
+    });
+  };
+
+  Pinger.prototype.sendRequestForPing = function(peerId, count, cb) {
+    this._sendRequestForPing(INDIRECT, peerId, count, cb);
+  };
+
+  Pinger.prototype._pingSerial = function(type, peerId, count, cb) {
     var results = [];
     (function pingNext(curPing) {
       if (curPing < count) {
-        this.ping(peerId, (err, result) => {
+        this._ping(type, peerId, (err, result) => {
           if (err) {
             console.log('ping error', err);
             return cb && cb(err);
@@ -66,6 +100,19 @@ window.Pinger = (function() {
     }.bind(this))(0);
   };
 
+  Pinger.prototype.pingSerialDirect = function(peerId, count, cb) {
+    this._ensureP2PConnection(peerId, err => {
+      if (err) {
+        return cb && cb(`unable to connect to ${peerId}, ${err}`);
+      }
+      this._pingSerial(DIRECT, peerId, count, cb);
+    });
+  };
+
+  Pinger.prototype.pingSerial = function(peerId, count, cb) {
+    this._pingSerial(INDIRECT, peerId, count, cb);
+  };
+
   Pinger.prototype.callPingHandler = function(err, pingId) {
     var handler = this.pingHandlers[pingId];
     delete this.pingHandlers[pingId];
@@ -73,11 +120,24 @@ window.Pinger = (function() {
     cb && cb(err, Date.now() - handler.startTime);
   };
 
-  Pinger.prototype.ping = function(peerId, cb) {
+  Pinger.prototype._ping = function(type, peerId, cb) {
     var pingId = Utility.guid();
     this.addPingHandler(pingId, Date.now(), cb);
-    this.connection.send('ping', peerId, pingId);
+    this.getConnectionType(type).send('ping', peerId, pingId);
   };
+
+  Pinger.prototype.ping = function(peerId, cb) {
+    this._ping(INDIRECT, peerId, cb);
+  };
+
+  Pinger.prototype.pingDirect = function(peerId, cb) {
+    this._ensureP2PConnection(peerId, err => {
+      if (err) {
+        return cb && cb(`unable to connect to peer ${peerId}`);
+      }
+      this._ping(DIRECT, peerId, cb);
+    });
+  }
 
   Pinger.prototype.onPingResults = function(cb) {
     this.onresults = cb;

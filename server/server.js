@@ -47,10 +47,10 @@ websockets = new ws.Server({ server: app, port: WS_PORT });
 websockets.on('connection', socket => {
   socket.on('message', message => {
     var parts = message.split(' ');
-    var type = parts[0];
-    var sender = parts[1];
-    var recipient = parts[2];
-    var payload = parts[3];
+    var type = parts.shift();
+    var sender = parts.shift();
+    var recipient = parts.shift();
+    var payload = parts.join(' ');
 
     // Register is the only message handled by the server.
     if (type === 'register') {
@@ -62,6 +62,7 @@ websockets.on('connection', socket => {
 
     // Pass message on to recipient, whatever it may mean.
     if (!clients[recipient]) {
+      console.log('error unknown recipient', recipient, Object.keys(clients));
       socket.send(`error ${type} ${sender} ${payload}`);
       return;
     }
