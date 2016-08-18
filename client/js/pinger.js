@@ -58,7 +58,7 @@ window.Pinger = (function() {
 
   Pinger.prototype.handleResults = function(type, err, peerId, payload) {
     var results = payload.split(',').map(number => {
-      return parseInt(number, 10);
+      return parseFloat(number);
     });
     this.onresults && this.onresults(peerId, this.clientId, results);
   };
@@ -117,12 +117,16 @@ window.Pinger = (function() {
     var handler = this.pingHandlers[pingId];
     delete this.pingHandlers[pingId];
     var cb = handler && handler.cb;
-    cb && cb(err, Date.now() - handler.startTime);
+    cb && cb(err, performance.now() - handler.startTime);
   };
 
   Pinger.prototype._ping = function(type, peerId, cb) {
     var pingId = Utility.guid();
-    this.addPingHandler(pingId, Date.now(), cb);
+    this.addPingHandler(pingId, performance.now(), (err, result) => {
+      // Round any performance numbers to 3 decimal places.
+      result = result && Utility.roundDecimals(result, 3);
+      cb && cb(err, result);
+    });
     this.getConnectionType(type).send('ping', peerId, pingId);
   };
 

@@ -27,7 +27,8 @@ function main() {
   }
 
   latencyHelper.onResults((sender, recipient, results) => {
-    DOM.resultTable.add(niceId(sender), niceId(recipient), results,
+    DOM.resultTable.add(niceId(sender), niceId(recipient),
+                        results.map(val => val.toFixed(1)),
                         Utility.stddev(results).toFixed(3),
                         Utility.mean(results).toFixed(3));
   });

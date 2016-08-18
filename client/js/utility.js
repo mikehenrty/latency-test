@@ -54,6 +54,10 @@ window.Utility = (function() {
       return Math.sqrt(sumOfDistances / data.length);
     },
 
+    roundDecimals: function(num) {
+      return parseFloat(num.toFixed(3));
+    },
+
     once: function(fn) {
       var called = false;
       return function() {
