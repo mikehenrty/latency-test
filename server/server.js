@@ -3,9 +3,9 @@ var fs = require('fs');
 var os = require('os');
 var path = require('path');
 var ws = require('ws');
-var utility = require('./lib/utility.js');
+var Utility = require('./lib/utility.js');
 var console = require('./lib/console_debug.js');
-console.DEBUG = true; // set to true for debug logging.
+console.DEBUG = false; // set to true for debug logging.
 
 const PORT = 8021;
 const WS_PORT = 8022;
@@ -30,7 +30,7 @@ function serveFile(p, res) {
 }
 
 var app = http.createServer((req, res) => {
-  serveFile(utility.getPathFromUrl(req.url), res);
+  serveFile(Utility.getPathFromUrl(req.url), res);
 });
 
 app.listen(PORT);
@@ -49,9 +49,9 @@ websockets.on('connection', socket => {
 
     // use setTimeout so that client list gets updated before printing.
     console.DEBUG && setTimeout(() => {
-      console.debug(type, utility.guidToNiceName(sender),
-                utility.guidToNiceName(recipient), payload,
-                '\n', Object.keys(clients), '\n');
+      console.debug(type, Utility.guidToNiceName(sender),
+                Utility.guidToNiceName(recipient), payload,
+                '\n', Utility.guidToNiceName(Object.keys(clients)), '\n');
     }, 0);
 
     // Register is the only message handled by the server.
@@ -64,7 +64,7 @@ websockets.on('connection', socket => {
 
     // Pass message on to recipient, whatever it may mean.
     if (!clients[recipient]) {
-      console.log('unrecognized recipient', recipient, Object.keys(clients));
+      console.log(`unrecognized ${recipient} ${Object.keys(clients)}\n`);
       socket.send(`error ${type} ${sender} ${payload}`);
       return;
     }
