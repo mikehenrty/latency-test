@@ -41,7 +41,7 @@ function main() {
 
   latencyHelper.pingTest(peer, PING_COUNT, err => {
     if (err) {
-      DOM.p(`could not connect to ${niceId(peer)}, ${err}`);
+      DOM.p(`could not connect to ${niceId(peer)}`);
       printPeerLink();
       return;
     }
