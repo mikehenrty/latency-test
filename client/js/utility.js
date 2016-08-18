@@ -54,6 +54,16 @@ window.Utility = (function() {
       return Math.sqrt(sumOfDistances / data.length);
     },
 
+    once: function(fn) {
+      var called = false;
+      return function() {
+        if (!called) {
+          called = true;
+          return fn.apply(null, arguments);
+        }
+      };
+    },
+
     Queue: Queue
   };
 })();

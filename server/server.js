@@ -65,7 +65,7 @@ websockets.on('connection', socket => {
     // Pass message on to recipient, whatever it may mean.
     if (!clients[recipient]) {
       console.log(`unrecognized ${recipient} ${Object.keys(clients)}\n`);
-      socket.send(`error ${type} ${sender} ${payload}`);
+      socket.send(`error ${type} ${recipient} ${payload}`);
       return;
     }
 

@@ -48,12 +48,12 @@ window.P2P = (function() {
       this.dataChannelStateChange.bind(this);
     this.dataChannel.onmessage = this.onMessage.bind(this);
 
-    this.connectHandler = cb;
+    this.connectHandler = Utility.once(cb);
     this.peerConnection.createOffer().then(offer => {
       this.peerConnection.setLocalDescription(offer);
       this.sendSignal('offer', offer);
     }).catch(err => {
-      cb && cb(err);
+      this.connectHandler && this.connectHandler(err);
     });
   };
 
@@ -99,6 +99,10 @@ window.P2P = (function() {
   P2P.prototype.signalHandler = function(err, peerId, message) {
     if (err) {
       console.log('signaling error', err, peerId, message);
+      // If signaling failed while connecting, call handler with error.
+      if (peerId === this.peerId) {
+        this.connectHandler && this.connectHandler(err);
+      }
       return;
     }
 
@@ -198,9 +202,7 @@ window.P2P = (function() {
   P2P.prototype.dataChannelStateChange = function(evt) {
     console.log('data channel state change', this.dataChannel.readyState);
     if (this.dataChannel.readyState === 'open') {
-      var handler = this.connectHandler;
-      this.connectHandler = null;
-      handler && handler(null);
+      this.connectHandler && this.connectHandler();
     }
   };
 
