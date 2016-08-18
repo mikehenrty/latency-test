@@ -15,9 +15,10 @@ function main() {
     var peerId = resultsHelper.whichIsPeer(sender, recipient);
     resultsHelper.addResults(peerId, results);
     var peerResults = resultsHelper.getResultsForPeer(peerId);
-    var mean = Utility.mean(results);
-    var stddev = Utility.stddev(results);
-    DOM.resultTable.add(Utility.niceId(peerId), results.length, mean, stddev);
+    var mean = Utility.mean(peerResults);
+    var stddev = Utility.stddev(peerResults);
+    DOM.resultTable.add(Utility.niceId(peerId), peerResults.length,
+                        mean, stddev);
   });
 
   if (!peerId) {

@@ -40,14 +40,13 @@ window.LatencyHelper = (function() {
   };
 
   LatencyHelper.prototype.pingTest = function(peerId, count, cb) {
-    // TODO: add more types of ping tests
-    this._ensurePinger(() => {
-      this.pinger.pingSerialDirect(peerId, count, (err, results) => {
-        if (err) {
-          return cb && cb(err);
-        }
-        this.pinger.sendRequestForPingDirect(peerId, count, cb);
-      });
+    (new Utility.Queue()).add((cb) => {
+      this._ensurePinger(cb);
+    }, (cb) => {
+      this.pinger.pingSerialDirect(peerId, count, cb);
+    }, () => {
+      this.pinger.sendRequestForPingDirect(peerId, count);
+      cb && cb(null);
     });
   };
 

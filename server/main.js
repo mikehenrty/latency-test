@@ -33,9 +33,9 @@ websockets.on('connection', socket => {
 
     // Register is the only message handled by the server.
     if (type === 'register') {
-      console.debug(Utility.guidToNiceName(Object.keys(clients)), '\n');
       clients[sender] = socket;
       socket.clientId = sender;
+      console.debug(`${Utility.guidToNiceName(Object.keys(clients))}\n`);
       socket.send('register_ack');
       return;
     }

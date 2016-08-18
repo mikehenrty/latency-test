@@ -20,11 +20,19 @@ window.Utility = (function() {
 
   Queue.prototype.runNextTask = function() {
     this.running = true;
-    this.tasks.pop()(this.handleDone);
+    var task = this.tasks.shift();
+    if (task.length === 1) {
+      task(this.handleDone);
+    } else {
+      task();
+      this.handleDone();
+    }
   };
 
-  Queue.prototype.add = function(task) {
-    this.tasks.push(task);
+  Queue.prototype.add = function() {
+    for (var i = 0; i < arguments.length; i++) {
+      this.tasks.push(arguments[i]);
+    }
     if (!this.running) {
       this.runNextTask();
     }
