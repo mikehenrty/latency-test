@@ -3,6 +3,7 @@ var fs = require('fs');
 var os = require('os');
 var path = require('path');
 var ws = require('ws');
+var utility = require('./lib/utility.js');
 
 const PORT = 8021;
 const WS_PORT = 8022;
@@ -26,16 +27,8 @@ function serveFile(p, res) {
   fileStream.pipe(res);
 }
 
-function getPath(req) {
-  var url = req.url.split('?')[0];
-  if (url.endsWith('/')) {
-    url += 'index.html';
-  }
-  return url;
-}
-
 var app = http.createServer((req, res) => {
-  serveFile(getPath(req), res);
+  serveFile(utility.getPathFromUrl(req.url), res);
 });
 
 app.listen(PORT);
@@ -62,7 +55,7 @@ websockets.on('connection', socket => {
 
     // Pass message on to recipient, whatever it may mean.
     if (!clients[recipient]) {
-      console.log('error unknown recipient', recipient, Object.keys(clients));
+      console.log('unrecognized recipient', recipient, Object.keys(clients));
       socket.send(`error ${type} ${sender} ${payload}`);
       return;
     }

@@ -6,7 +6,7 @@ function main() {
 
   var url = new URL(window.location.href);
   var peer = url.searchParams.get('peer');
-  var helper = new LatencyHelper(id);
+  var latencyHelper = new LatencyHelper(id);
 
   function printPeerLink() {
     DOM.link(`${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`,
@@ -26,32 +26,26 @@ function main() {
     return clientNames[guid];
   }
 
-  helper.onResults((sender, recipient, results) => {
+  latencyHelper.onResults((sender, recipient, results) => {
     DOM.resultTable.add(niceId(sender), niceId(recipient), results,
                         Utility.stddev(results).toFixed(3),
                         Utility.mean(results).toFixed(3));
   });
 
-  helper.init(err => {
+  if (!peer) {
+    printPeerLink();
+    latencyHelper.listen();
+    return;
+  }
+
+  latencyHelper.pingTest(peer, PING_COUNT, err => {
     if (err) {
-      DOM.p(`error setting up, ${err}`);
+      DOM.p(`could not connect to ${niceId(peer)}, ${err}`);
+      printPeerLink();
       return;
     }
 
-    if (!peer) {
-      printPeerLink();
-    }
-
-    if (peer) {
-      helper.pingTest(peer, PING_COUNT, err => {
-        if (err) {
-          DOM.p(`could not connect to ${niceId(peer)}, ${err}`);
-          printPeerLink();
-        } else {
-          DOM.p(`finished ping test with ${niceId(peer)}`);
-        }
-      });
-    }
+    DOM.p(`finished ping test with ${niceId(peer)}`);
   });
 }
 

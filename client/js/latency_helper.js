@@ -27,23 +27,16 @@ window.LatencyHelper = (function() {
     }
     this._ensureConnection(() => {
       this.pinger = new Pinger(this.clientId, this.connection);
+      this.pinger.onPingResults((fromId, toId, results) => {
+        this.resultsHandler &&
+          this.resultsHandler(fromId, toId, results);
+      });
       cb && cb(null);
     });
   };
 
   LatencyHelper.prototype.onResults = function(cb) {
     this.resultsHandler = cb;
-  };
-
-  LatencyHelper.prototype.init = function(cb) {
-    this._ensurePinger(err => {
-      this.pinger.onPingResults((fromId, toId, results) => {
-        this.resultsHandler &&
-          this.resultsHandler(fromId, toId, results);
-      });
-
-      cb && cb(err);
-    });
   };
 
   LatencyHelper.prototype.pingTest = function(peerId, count, cb) {
@@ -56,6 +49,10 @@ window.LatencyHelper = (function() {
         this.pinger.sendRequestForPingDirect(peerId, count, cb);
       });
     });
+  };
+
+  LatencyHelper.prototype.listen = function(cb) {
+    this._ensurePinger(cb);
   };
 
   return LatencyHelper;
