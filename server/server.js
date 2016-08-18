@@ -4,6 +4,8 @@ var os = require('os');
 var path = require('path');
 var ws = require('ws');
 var utility = require('./lib/utility.js');
+var console = require('./lib/console_debug.js');
+console.DEBUG = true; // set to true for debug logging.
 
 const PORT = 8021;
 const WS_PORT = 8022;
@@ -44,6 +46,13 @@ websockets.on('connection', socket => {
     var sender = parts.shift();
     var recipient = parts.shift();
     var payload = parts.join(' ');
+
+    // use setTimeout so that client list gets updated before printing.
+    console.DEBUG && setTimeout(() => {
+      console.debug(type, utility.guidToNiceName(sender),
+                utility.guidToNiceName(recipient), payload,
+                '\n', Object.keys(clients), '\n');
+    }, 0);
 
     // Register is the only message handled by the server.
     if (type === 'register') {
