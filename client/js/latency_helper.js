@@ -4,7 +4,7 @@ window.LatencyHelper = (function() {
   function LatencyHelper(clientId) {
     this.clientId = clientId;
     this.connection = null;
-    this.resultHandler = null;
+    this.resultsHandler = null;
   }
 
   LatencyHelper.prototype._ensureConnection = function(cb) {

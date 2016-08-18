@@ -5,37 +5,36 @@ function main() {
     DOM.link(Utility.getPeerLink(), 'Link to connect to this browser.', true);
   }
 
-  var id = Utility.getClientId();
-  var peer = Utility.getPeerId();
-  var latencyHelper = new LatencyHelper(id);
 
-  var allResults = {};
+  var clientId = Utility.getClientId();
+  var peerId = Utility.getPeerId();
+  var latencyHelper = new LatencyHelper(clientId);
+  var resultsHelper = new ResultsHelper(clientId);
+
   latencyHelper.onResults((sender, recipient, results) => {
-    var peerId = recipient !== id ? recipient : sender;
-    allResults[peerId] = allResults[peerId] || [];
-    allResults[peerId].push.apply(allResults[peerId], results);
-    results = allResults[peerId];
+    var peerId = resultsHelper.whichIsPeer(sender, recipient);
+    resultsHelper.addResults(peerId, results);
+    var peerResults = resultsHelper.getResultsForPeer(peerId);
     var mean = Utility.mean(results);
     var stddev = Utility.stddev(results);
     DOM.resultTable.add(Utility.niceId(peerId), results.length, mean, stddev);
   });
 
-  if (!peer) {
+  if (!peerId) {
     printPeerLink();
     latencyHelper.listen();
     return;
   }
 
-  latencyHelper.pingTest(peer, PING_COUNT, err => {
+  latencyHelper.pingTest(peerId, PING_COUNT, err => {
     if (err) {
-      DOM.p(`could not connect to ${Utility.niceId(peer)}`);
+      DOM.p(`could not connect to ${Utility.niceId(peerId)}`);
       printPeerLink();
       return;
     }
 
-    DOM.p(`finished ping test with ${Utility.niceId(peer)}`);
+    DOM.p(`finished ping test with ${Utility.niceId(peerId)}`);
   });
-
 }
 
 document.addEventListener('DOMContentLoaded', main);
