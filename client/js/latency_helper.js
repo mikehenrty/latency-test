@@ -50,6 +50,8 @@ window.LatencyHelper = (function() {
       this.pinger.sendRequestForPingDirect(peerId, count);
       this.pinger.sendRequestForPing(peerId, count);
       cb && cb(null);
+    }).catch(err => {
+      cb && cb(err);
     });
   };
 

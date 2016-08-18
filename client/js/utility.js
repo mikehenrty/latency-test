@@ -4,12 +4,17 @@ window.Utility = (function() {
   function Queue() {
     this.tasks = [];
     this.running = false;
+    this.errorHandler = null;
     this.handleDone = this.handleDone.bind(this);
   }
 
   Queue.prototype.handleDone = function(err) {
     if (err) {
       console.log('queue callback error', err);
+      // Only stop executing queue if error handler attached.
+      if (this.errorHandler) {
+        return this.errorHandler(err);
+      }
     }
 
     this.running = false;
@@ -36,6 +41,11 @@ window.Utility = (function() {
     if (!this.running) {
       this.runNextTask();
     }
+    return this;
+  };
+
+  Queue.prototype.catch = function(cb) {
+    this.errorHandler = cb;
   };
 
   var peerCount = 0;
