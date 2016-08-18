@@ -15,6 +15,9 @@ window.Pinger = (function() {
     this.onresults = null;
   }
 
+  Pinger.INDIRECT = INDIRECT;
+  Pinger.DIRECT = DIRECT;
+
   Pinger.prototype._ensureP2PConnection = function(peerId, cb) {
     if (this.p2p.peerId === peerId && this.p2p.isConnected()) {
       return cb && cb(null);
@@ -60,7 +63,7 @@ window.Pinger = (function() {
     var results = payload.split(',').map(number => {
       return parseFloat(number);
     });
-    this.onresults && this.onresults(peerId, this.clientId, results);
+    this.onresults && this.onresults(peerId, this.clientId, type, results);
   };
 
   Pinger.prototype._sendRequestForPing = function(type, peerId, count, cb) {
@@ -93,8 +96,8 @@ window.Pinger = (function() {
           pingNext.call(this, ++curPing);
         });
       } else {
-        this.onresults && this.onresults(this.clientId, peerId, results);
-        this.connection.send('results', peerId, results);
+        this.onresults && this.onresults(this.clientId, peerId, type, results);
+        this.getConnectionType(type).send('results', peerId, results);
         cb && cb(null, results);
       }
     }.bind(this))(0);

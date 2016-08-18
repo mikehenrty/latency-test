@@ -38,17 +38,17 @@ window.Utility = (function() {
     }
   };
 
-  var clientCount = 0;
-  var clientNames = {};
+  var peerCount = 0;
+  var peerNames = {};
   function niceId(guid) {
     if (window.clientId && window.clientId === guid) {
       return 'Me';
     }
-    if (clientNames[guid]) {
-      return clientNames[guid]
+    if (peerNames[guid]) {
+      return peerNames[guid]
     }
-    clientNames[guid] = 'client_' + ++clientCount;
-    return clientNames[guid];
+    peerNames[guid] = 'peer_' + ++peerCount;
+    return peerNames[guid];
   }
 
   return {
@@ -64,10 +64,16 @@ window.Utility = (function() {
     },
 
     mean: function(data) {
+      if (data.length === 0) {
+        return 0;
+      }
       return Utility.sum(data) / data.length;
     },
 
     stddev: function(data) {
+      if (data.length === 0) {
+        return 0;
+      }
       var mean = Utility.mean(data);
       var sumOfDistances = Utility.sum(data.map(result => {
         return Math.pow(mean - result, 2);

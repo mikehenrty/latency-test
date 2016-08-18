@@ -15,8 +15,9 @@ window.DOM = (function() {
       table.appendChild(thead);
       table.appendChild(tbody);
       document.body.appendChild(table);
-      resultTable.updateRow(tr, 'Name', 'Sample Size',
-                            'Average', 'Std Dev');
+      resultTable.updateRow(tr, 'Name',
+                            'WebRTC', 'WebRTC Avg', 'StdDev',
+                            'WebSocket', 'WebSocket Avg', 'StdDev');
     },
 
     getRow: function(id) {
@@ -28,30 +29,42 @@ window.DOM = (function() {
       tr = document.createElement('tr');
       tr.id = id;
       tr.peerCell = document.createElement('th');
-      tr.sizeCell = document.createElement('th');
-      tr.meanCell = document.createElement('th');
-      tr.stddevCell = document.createElement('th');
+      tr.iSizeCell = document.createElement('th');
+      tr.iMeanCell = document.createElement('th');
+      tr.iStddevCell = document.createElement('th');
+      tr.dSizeCell = document.createElement('th');
+      tr.dMeanCell = document.createElement('th');
+      tr.dStddevCell = document.createElement('th');
 
       tr.appendChild(tr.peerCell);
-      tr.appendChild(tr.sizeCell);
-      tr.appendChild(tr.meanCell);
-      tr.appendChild(tr.stddevCell);
+      tr.appendChild(tr.iSizeCell);
+      tr.appendChild(tr.iMeanCell);
+      tr.appendChild(tr.iStddevCell);
+      tr.appendChild(tr.dSizeCell);
+      tr.appendChild(tr.dMeanCell);
+      tr.appendChild(tr.dStddevCell);
       return tr;
     },
 
-    updateRow: function(row, peer, sampleSize, mean, stddev) {
+    updateRow: function(row, peer, iSampleSize, iMean, iStddev,
+                                   dSampleSize, dMean, dStddev) {
       row.peerCell.textContent = peer;
-      row.sizeCell.textContent = sampleSize;
-      row.meanCell.textContent = mean;
-      row.stddevCell.textContent = stddev;
+      row.iSizeCell.textContent = iSampleSize;
+      row.iMeanCell.textContent = iMean;
+      row.iStddevCell.textContent = iStddev;
+      row.dSizeCell.textContent = dSampleSize;
+      row.dMeanCell.textContent = dMean;
+      row.dStddevCell.textContent = dStddev;
     },
 
-    add: function(peer, sampleSize, mean, stddev) {
+    update: function(peer, iSampleSize, iMean, iStddev,
+                        dSampleSize, dMean, dStddev) {
       resultTable.ensure();
       var row = resultTable.getRow(peer);
       tbody.appendChild(row);
-      resultTable.updateRow(resultTable.getRow(peer), peer, sampleSize,
-                            mean.toFixed(3), stddev.toFixed(3));
+      resultTable.updateRow(resultTable.getRow(peer), peer,
+                            iSampleSize, iMean.toFixed(3), iStddev.toFixed(3),
+                            dSampleSize, dMean.toFixed(3), dStddev.toFixed(3));
     }
   };
 

@@ -27,9 +27,9 @@ window.LatencyHelper = (function() {
     }
     this._ensureConnection(() => {
       this.pinger = new Pinger(this.clientId, this.connection);
-      this.pinger.onPingResults((fromId, toId, results) => {
+      this.pinger.onPingResults((fromId, toId, type, results) => {
         this.resultsHandler &&
-          this.resultsHandler(fromId, toId, results);
+          this.resultsHandler(fromId, toId, type, results);
       });
       cb && cb(null);
     });
@@ -44,8 +44,11 @@ window.LatencyHelper = (function() {
       this._ensurePinger(cb);
     }, (cb) => {
       this.pinger.pingSerialDirect(peerId, count, cb);
+    }, (cb) => {
+      this.pinger.pingSerial(peerId, count, cb);
     }, () => {
       this.pinger.sendRequestForPingDirect(peerId, count);
+      this.pinger.sendRequestForPing(peerId, count);
       cb && cb(null);
     });
   };
