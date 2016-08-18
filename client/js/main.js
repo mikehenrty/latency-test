@@ -1,23 +1,16 @@
 function main() {
   const PING_COUNT = 100;
 
-  var id = Utility.getClientId();
-  var url = new URL(window.location.href);
-  var peer = url.searchParams.get('peer');
-  var latencyHelper = new LatencyHelper(id);
-
   function printPeerLink() {
-    DOM.link(`${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`,
-             'Click here to connect to this browser.', true);
+    DOM.link(Utility.getPeerLink(), 'Link to connect to this browser.', true);
   }
+
+  var id = Utility.getClientId();
+  var peer = Utility.getPeerId();
+  var latencyHelper = new LatencyHelper(id);
 
   var allResults = {};
   latencyHelper.onResults((sender, recipient, results) => {
-    if (sender !== id && recipient !== id) {
-      console.log('why did i get these results?', sender, recipient);
-      return;
-    }
-
     var peerId = recipient !== id ? recipient : sender;
     allResults[peerId] = allResults[peerId] || [];
     allResults[peerId].push.apply(allResults[peerId], results);
@@ -42,6 +35,7 @@ function main() {
 
     DOM.p(`finished ping test with ${Utility.niceId(peer)}`);
   });
+
 }
 
 document.addEventListener('DOMContentLoaded', main);

@@ -81,6 +81,17 @@ window.Utility = (function() {
       };
     },
 
+    getPeerLink: function() {
+      var id = Utility.getClientId();
+      var url = new URL(window.location.href);
+      return `${url.protocol}\/\/${url.host}${url.pathname}?peer=${id}`;
+    },
+
+    getPeerId: function() {
+      var url = new URL(window.location.href);
+      return url.searchParams.get('peer');
+    },
+
     getClientId: function() {
       if (!window.clientId) {
         window.clientId = Utility.guid();
