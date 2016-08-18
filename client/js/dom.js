@@ -15,7 +15,7 @@ window.DOM = (function() {
       table.appendChild(thead);
       table.appendChild(tbody);
       document.body.appendChild(table);
-      resultTable.updateRow('header', 'Name', 'Sample Size',
+      resultTable.updateRow(tr, 'Name', 'Sample Size',
                             'Average', 'Std Dev');
     },
 
@@ -39,18 +39,18 @@ window.DOM = (function() {
       return tr;
     },
 
-    updateRow: function(id, peer, sampleSize, mean, stddev) {
-      var tr = resultTable.getRow(id);
-      tbody.appendChild(tr);
-      tr.peerCell.textContent = peer;
-      tr.sizeCell.textContent = sampleSize;
-      tr.meanCell.textContent = mean;
-      tr.stddevCell.textContent = stddev;
+    updateRow: function(row, peer, sampleSize, mean, stddev) {
+      row.peerCell.textContent = peer;
+      row.sizeCell.textContent = sampleSize;
+      row.meanCell.textContent = mean;
+      row.stddevCell.textContent = stddev;
     },
 
     add: function(peer, sampleSize, mean, stddev) {
       resultTable.ensure();
-      resultTable.updateRow(peer, peer, sampleSize,
+      var row = resultTable.getRow(peer);
+      tbody.appendChild(row);
+      resultTable.updateRow(resultTable.getRow(peer), peer, sampleSize,
                             mean.toFixed(3), stddev.toFixed(3));
     }
   };
