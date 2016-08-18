@@ -10,37 +10,48 @@ window.DOM = (function() {
       table.id = 'result-table';
       tbody = document.createElement('tbody');
       var thead = document.createElement('thead');
-      var tr = resultTable.getRow('connection', 'results', 'std dev', 'mean');
+      var tr = resultTable.getRow('header');
       thead.appendChild(tr);
       table.appendChild(thead);
       table.appendChild(tbody);
       document.body.appendChild(table);
+      resultTable.updateRow('header', 'Name', 'Sample Size',
+                            'Average', 'Std Dev');
     },
 
-    getRow: function(connText, resultsText, stddevText, meanText) {
-      var tr = document.createElement('tr');
-      var connCell = document.createElement('th');
-      var resultsCell = document.createElement('th');
-      var stddevCell = document.createElement('th');
-      var meanCell = document.createElement('th');
+    getRow: function(id) {
+      var tr = document.getElementById(id);
+      if (tr) {
+        return tr;
+      }
 
-      connCell.textContent = connText;
-      resultsCell.textContent = resultsText;
-      stddevCell.textContent = stddevText;
-      meanCell.textContent = meanText;
+      tr = document.createElement('tr');
+      tr.id = id;
+      tr.peerCell = document.createElement('th');
+      tr.sizeCell = document.createElement('th');
+      tr.meanCell = document.createElement('th');
+      tr.stddevCell = document.createElement('th');
 
-      tr.appendChild(connCell);
-      tr.appendChild(resultsCell);
-      tr.appendChild(stddevCell);
-      tr.appendChild(meanCell);
+      tr.appendChild(tr.peerCell);
+      tr.appendChild(tr.sizeCell);
+      tr.appendChild(tr.meanCell);
+      tr.appendChild(tr.stddevCell);
       return tr;
     },
 
-    add: function(sender, recipienct, results, stddev, mean) {
-      resultTable.ensure();
-      var tr = resultTable.getRow(`${sender} -> ${recipienct}`,
-                                  results, stddev, mean);
+    updateRow: function(id, peer, sampleSize, mean, stddev) {
+      var tr = resultTable.getRow(id);
       tbody.appendChild(tr);
+      tr.peerCell.textContent = peer;
+      tr.sizeCell.textContent = sampleSize;
+      tr.meanCell.textContent = mean;
+      tr.stddevCell.textContent = stddev;
+    },
+
+    add: function(peer, sampleSize, mean, stddev) {
+      resultTable.ensure();
+      resultTable.updateRow(peer, peer, sampleSize,
+                            mean.toFixed(3), stddev.toFixed(3));
     }
   };
 

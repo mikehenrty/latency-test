@@ -30,6 +30,19 @@ window.Utility = (function() {
     }
   };
 
+  var clientCount = 0;
+  var clientNames = {};
+  function niceId(guid) {
+    if (window.clientId && window.clientId === guid) {
+      return 'Me';
+    }
+    if (clientNames[guid]) {
+      return clientNames[guid]
+    }
+    clientNames[guid] = 'client_' + ++clientCount;
+    return clientNames[guid];
+  }
+
   return {
     guid: function() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -68,6 +81,15 @@ window.Utility = (function() {
       };
     },
 
+    getClientId: function() {
+      if (!window.clientId) {
+        window.clientId = Utility.guid();
+        console.log('client id', window.clientId);
+      }
+      return window.clientId;
+    },
+
+    niceId: niceId,
     Queue: Queue
   };
 })();

@@ -1,9 +1,7 @@
 function main() {
-  const PING_COUNT = 10;
+  const PING_COUNT = 100;
 
-  var id = Utility.guid();
-  console.log('client id', id);
-
+  var id = Utility.getClientId();
   var url = new URL(window.location.href);
   var peer = url.searchParams.get('peer');
   var latencyHelper = new LatencyHelper(id);
@@ -13,24 +11,20 @@ function main() {
              'Click here to connect to this browser.', true);
   }
 
-  var clientCount = 0;
-  var clientNames = {};
-  function niceId(guid) {
-    if (id === guid) {
-      return 'Me';
-    }
-    if (clientNames[guid]) {
-      return clientNames[guid]
-    }
-    clientNames[guid] = 'client_' + ++clientCount;
-    return clientNames[guid];
-  }
-
+  var allResults = {};
   latencyHelper.onResults((sender, recipient, results) => {
-    DOM.resultTable.add(niceId(sender), niceId(recipient),
-                        results.map(val => val.toFixed(1)),
-                        Utility.stddev(results).toFixed(3),
-                        Utility.mean(results).toFixed(3));
+    if (sender !== id && recipient !== id) {
+      console.log('why did i get these results?', sender, recipient);
+      return;
+    }
+
+    var peerId = recipient !== id ? recipient : sender;
+    allResults[peerId] = allResults[peerId] || [];
+    allResults[peerId].push.apply(allResults[peerId], results);
+    results = allResults[peerId];
+    var mean = Utility.mean(results);
+    var stddev = Utility.stddev(results);
+    DOM.resultTable.add(Utility.niceId(peerId), results.length, mean, stddev);
   });
 
   if (!peer) {
@@ -41,12 +35,12 @@ function main() {
 
   latencyHelper.pingTest(peer, PING_COUNT, err => {
     if (err) {
-      DOM.p(`could not connect to ${niceId(peer)}`);
+      DOM.p(`could not connect to ${Utility.niceId(peer)}`);
       printPeerLink();
       return;
     }
 
-    DOM.p(`finished ping test with ${niceId(peer)}`);
+    DOM.p(`finished ping test with ${Utility.niceId(peer)}`);
   });
 }
 
