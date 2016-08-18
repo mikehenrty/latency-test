@@ -50,8 +50,8 @@ websockets.on('connection', socket => {
     // use setTimeout so that client list gets updated before printing.
     console.DEBUG && setTimeout(() => {
       console.debug(type, Utility.guidToNiceName(sender),
-                Utility.guidToNiceName(recipient), payload,
-                '\n', Utility.guidToNiceName(Object.keys(clients)), '\n');
+                    Utility.guidToNiceName(recipient), payload,
+                    '\n', Utility.guidToNiceName(Object.keys(clients)), '\n');
     }, 0);
 
     // Register is the only message handled by the server.
@@ -64,7 +64,7 @@ websockets.on('connection', socket => {
 
     // Pass message on to recipient, whatever it may mean.
     if (!clients[recipient]) {
-      console.log(`unrecognized ${recipient} ${Object.keys(clients)}\n`);
+      console.debug(`unrecognized ${recipient} ${Object.keys(clients)}\n`);
       socket.send(`error ${type} ${recipient} ${payload}`);
       return;
     }
